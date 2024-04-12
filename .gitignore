@@ -1,0 +1,7 @@
+*.json
+/venv/*
+/log/*
+/__pycache__/
+/calibration-transform/
+*.jpg
+.env
