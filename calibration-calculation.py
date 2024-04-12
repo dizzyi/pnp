@@ -2,7 +2,7 @@ import numpy
 import itertools
 from inovopy.logger import Logger
 from transform import *
-
+from calculation import *
 
 def calibration_calculation():
     logger = Logger.default("Calibration - Calculation")
@@ -43,6 +43,8 @@ def calibration_calculation():
     sol = numpy.matmul(uv_inv, xy)
 
     logger.info(f"sol : \n{sol}")
+
+    save_calculation_data(sol.tolist())
 
     def uv_to_xy(u,v):
         mat = numpy.asarray([
