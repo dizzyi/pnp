@@ -54,7 +54,15 @@ def calibration_calculation():
 
         return (xy[0,0],xy[1,0])
     
-    logger.info(f"{uv_to_xy(516,88)}")
+    for (i,j) in itertools.product([-1,1],[-1,1]):
+        key = f"{i},{j}"
+        val = transform_data[key]
+        x,y = val['x'],val['y']
+        u,v = val['circle'][0],val['circle'][1]
+        cx,cy = uv_to_xy(u,v)
+        logger.info(f"{u:>5.1f}, {v:>5.1f}")
+        logger.info(f"    recorded   : {x:5.1f}, {y:>5.1f}")
+        logger.info(f"    calculated : {cx:5.1f}, {cy:>5.1f}")
 
 
 
