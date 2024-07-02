@@ -11,7 +11,7 @@ RED = 255,0,0
 def calibration_hough():
     logger = Logger.default("Calibration - Hough")
     rs = RealSense()
-    bot = InovoRobot.default_iva("192.168.1.114")
+    bot = InovoRobot.default_iva("192.168.8.103")
 
     HOME = bot.get_current_transform().set_euler(180,0,0)
     logger.info(HOME)
@@ -70,64 +70,6 @@ def calibration_hough():
             save_hough_data(hough_data)
 
     cv2.destroyAllWindows()
-
-
-def crop():
-    rs = RealSense()
-
-    x = 0
-    y = 0
-    w = 100
-    h = 100
-
-    # H  72 J  74 K  75 L  76
-    # h 104 j 106 k 107 l 108
-
-    # r 114 R 82
-
-    while True:
-        src = rs.get_frame()
-
-        marked = src.copy()
-
-        cv2.rectangle(marked,(x,y),(x+w,y+h),RED,2)
-
-        cv2.imshow("rs stream", marked)
-        
-        key = cv2.waitKey(1)
-
-        if key == 104 and x > 0:
-            x -= 1
-        elif key == 108 and x < 640:
-            x += 1
-        elif key == 106 and y < 480:
-            y += 1
-        elif key == 107 and y > 0:
-            y -= 1
-        
-
-        elif key == 119 and h > 10:
-            h -= 1
-        elif key == 115 and h < 500:
-            h += 1
-        
-        elif key == 97 and w > 10:
-            w -= 1
-        elif key == 100 and w < 500:
-            w += 1
-
-        elif key == 114:
-            break
-    
-        elif key == -1:
-            continue
-
-        else:
-            print(key)
-
-    cv2.destroyAllWindows()
-    
-    cv2.imwrite("./target.jpg",src[y:y+h,x:x+w])
 
 
 if __name__ == "__main__":

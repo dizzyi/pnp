@@ -8,10 +8,10 @@ HOUGH_DATA_FILE = "./calibration-hough.json"
 def hough_circle(src, param1:float=250, param2:float=25):    
     gray = cv2.cvtColor(src, cv2.COLOR_RGB2GRAY)
     blurred = cv2.GaussianBlur(gray, (5,5), 0)
-    equalized = cv2.equalizeHist(blurred)
+    #equalized = cv2.equalizeHist(blurred)
     #_,thresholded = cv2.threshold(equalized, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     #canny = cv2.Canny(thresholded, 50, 100)
-    hough_in = equalized#thresholded#canny
+    hough_in = blurred#equalized#thresholded#canny
 
     cv2.imshow("hough_in", hough_in)
 

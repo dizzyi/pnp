@@ -6,7 +6,7 @@ def main():
     rs = RealSense()
 
     while True:
-        src = rs.get_frame()
+        src = rs.get_frame()[0]
         cv2.imshow("realsense stream", src)
         cv2.waitKey(1)
 

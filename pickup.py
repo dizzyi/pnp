@@ -10,7 +10,7 @@ from calculation import *
 def pickup():
     logger = Logger.default("Pick Up")
     rs = RealSense()
-    bot = InovoRobot.default_iva("192.168.1.114")
+    bot = InovoRobot.default_iva("192.168.8.103")
 
     bot.gipper_activate()
     bot.sleep(5)
@@ -31,11 +31,11 @@ def pickup():
             continue
 
         src = rs.get_frame()[0]
-        circles = hough_circle(src,param1,param2)
+        circles,_ = hough_circle(src,param1,param2)
 
         try:
             circles = numpy.uint16(numpy.round(circles))
-            circle = circles[0]
+            circle = circles[0][0]
         except Exception as e:
             logger.warn(f"{e}")
             continue

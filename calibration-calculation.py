@@ -12,18 +12,18 @@ def calibration_calculation():
     uv = []
     xy = []
     
-    for (i,j) in itertools.product([-1,1],[-1,1]):
-        key = f"{i},{j}"
-        val = transform_data[key]
-        logger.info(f"key : {key:>6}, val {val}")
-        u = val['circle'][0]
-        v = val['circle'][1]
+    for anchor_data in transform_data['anchors']:
+        x = anchor_data['x']
+        y = anchor_data['y']
+        u = anchor_data['u']
+        v = anchor_data['v']
+        logger.info(f"anchor data: {anchor_data}")
         row1 = [u,v,1,0,0,0]
         row2 = [0,0,0,u,v,1]
         uv.append(row1)
         uv.append(row2)
-        xy.append([val['x']])
-        xy.append([val['y']])
+        xy.append([x])
+        xy.append([y])
     
     logger.info(f"uv :")
     for row in uv:
@@ -46,21 +46,11 @@ def calibration_calculation():
 
     save_calculation_data(sol.tolist())
 
-    def uv_to_xy(u,v):
-        mat = numpy.asarray([
-            [u,v,1,0,0,0],
-            [0,0,0,u,v,1],
-        ])
-        
-        xy = numpy.matmul(mat,sol)
-
-        return (xy[0,0],xy[1,0])
+    uv_to_xy = get_calculation_func()
     
-    for (i,j) in itertools.product([-1,1],[-1,1]):
-        key = f"{i},{j}"
-        val = transform_data[key]
-        x,y = val['x'],val['y']
-        u,v = val['circle'][0],val['circle'][1]
+    for anchor_data in transform_data['anchors']:
+        x,y = anchor_data['x'],anchor_data['y']
+        u,v = anchor_data['u'],anchor_data['v']
         cx,cy = uv_to_xy(u,v)
         logger.info(f"{u:>5.1f}, {v:>5.1f}")
         logger.info(f"    recorded   : {x:5.1f}, {y:>5.1f}")

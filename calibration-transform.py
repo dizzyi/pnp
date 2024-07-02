@@ -12,18 +12,23 @@ from transform import *
 def calibration_transfrom():
     logger = Logger.default("Calibration - Transform")
     rs = RealSense()
-    bot = InovoRobot.default_iva("192.168.1.114")
+    bot = InovoRobot.default_iva("192.168.8.103")
 
     transform_data = load_transform_data()
     
-    HOME = transform_data["HOME"]
-
+    if 'HOME' in transform_data:
+        HOME = transform_data["HOME"]
+    else:
+        HOME = bot.get_current_transform().set_euler(180,0,180)
+        transform_data["HOME"] = HOME
+        save_transform_data(transform_data)
     bot.linear(HOME)
 
     bot.gipper_activate()
     bot.sleep(5)
 
     calibration_height(logger, bot, transform_data)
+    calibration_dst(logger,bot,transform_data)
     calibration_grid(logger, bot, transform_data, rs)
 
        
@@ -34,28 +39,7 @@ def calibration_height(logger: Logger, bot: InovoRobot, transform_data: dict) ->
             return
     logger.info("starting height calibration")
 
-    while True:
-        in_tok = input(":").split(",")
-
-        t = Transform()
-        try:
-            if "x" in in_tok[0]:
-                val = float(in_tok[1])
-                t.then_x(val)
-            elif "y" in in_tok[0]:
-                val = float(in_tok[1])
-                t.then_y(val)
-            elif "z" in in_tok[0]:
-                val = float(in_tok[1])
-                t.then_z(val)
-            elif "q" in in_tok[0]:
-                break
-            else:
-                logger.warn("unknown command")
-        except (IndexError, ValueError) as e:
-            logger.warn(f"{e}")
-
-        bot.linear_relative(t)
+    command_control(logger,bot)
         
     transform_data["height"] = bot.get_current_transform().vec_mm[2]
     save_transform_data(transform_data)
@@ -67,6 +51,10 @@ def calibration_height(logger: Logger, bot: InovoRobot, transform_data: dict) ->
     return 
 
 def calibration_grid(logger:Logger, bot: InovoRobot, transform_data: dict, rs: RealSense):
+    logger.info("reclibrate grid? (Y/N)")
+    if not "Y" in input(":"):
+        return
+    
     logger.info("starting calibrate grid . . .")
     
     hough_data = load_hough_data()
@@ -86,10 +74,13 @@ def calibration_grid(logger:Logger, bot: InovoRobot, transform_data: dict, rs: R
 
     bot.linear(HOME)
 
+    transform_data['anchors'] = []
+    save_transform_data(transform_data)
+
     for i in [-1,1]:
         for j in [-1,1]:
-            x = i * 150 + 50
-            y = j * 100 - 25
+            x = i * 150
+            y = j * 100 + 55
             anchor = CENTER.clone().then_x(x).then_y(y)
             anchor_up = anchor.clone().then_z(100) 
             bot.linear(anchor_up)
@@ -103,12 +94,14 @@ def calibration_grid(logger:Logger, bot: InovoRobot, transform_data: dict, rs: R
 
             circle = get_coord(logger, rs, hough_data)
 
-            transform_data[f"{i},{j}"] = {
+            anchor_data = {
                 'x': x,
                 'y': y,
-                'circle': circle
+                'u': circle[0],
+                'v': circle[1],
+                'r': circle[2],
             }
-
+            transform_data['anchors'].append(anchor_data)
             save_transform_data(transform_data)
 
             bot.linear(anchor_up)
@@ -162,5 +155,22 @@ def get_coord(logger: Logger, rs:RealSense, hough_data: dict):
         except:
             pass
 
+def calibration_dst(logger: Logger, bot: InovoRobot, transform_data: dict) -> float:
+    logger.info("reclibrate dst? (Y/N)")
+    if not "Y" in input(":"):
+        return
+
+    logger.info("starting calibrate dst . . .")
+
+    bot.linear(transform_data['HOME'])
+
+    command_control(logger,bot)
+
+    DST = bot.get_current_transform()
+
+    if 'height' in transform_data:
+        DST.set_z(transform_data['height'])
+
+    save_transform_data()
 if __name__ == "__main__":
     calibration_transfrom()

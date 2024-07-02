@@ -1,7 +1,6 @@
 import json
 import numpy
 
-
 CALCULATION_DATA_FILE = "./calibration-calculation.json"
 
 def get_calculation_func():
